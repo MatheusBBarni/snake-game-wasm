@@ -1,14 +1,14 @@
 import './styles.css'
 
-import init, { World } from 'snake_game_wasm'
+import init, { World, Direction } from 'snake_game_wasm'
 
 const canvas = document.querySelector(".wrapper #snake-screen") as HTMLCanvasElement
 
 (async () => {
   await init()
 
-  const WORLD_WIDTH = 16;
-  const SNAKE_INDEX = Date.now() % (WORLD_WIDTH * WORLD_WIDTH);
+  const WORLD_WIDTH = 16
+  const SNAKE_INDEX = Date.now() % (WORLD_WIDTH * WORLD_WIDTH)
 
   const world = World.new(WORLD_WIDTH, SNAKE_INDEX)
 
@@ -20,6 +20,26 @@ const canvas = document.querySelector(".wrapper #snake-screen") as HTMLCanvasEle
 
   canvas.height = worldSize
   canvas.width = worldSize
+
+  document.addEventListener('keydown', ({ code }: KeyboardEvent) => {
+    switch (code) {
+      case 'ArrowUp':
+        world.change_snake_direction(Direction.Up)
+        break
+      case 'ArrowRight':
+        world.change_snake_direction(Direction.Right)
+        break
+      case 'ArrowDown':
+        world.change_snake_direction(Direction.Down)
+        break
+      case 'ArrowLeft':
+        world.change_snake_direction(Direction.Left)
+        break
+      default:
+        console.log(`Key: ${code} don't work!`)
+        break
+    }
+  })
 
   function drawWorld() {
     context.beginPath()
@@ -54,7 +74,7 @@ const canvas = document.querySelector(".wrapper #snake-screen") as HTMLCanvasEle
   }
 
   function update() {
-    const FPS = 5;
+    const FPS = 5
     setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
       world.update()

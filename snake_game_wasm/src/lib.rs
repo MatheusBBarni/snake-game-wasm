@@ -4,6 +4,7 @@ use wee_alloc::WeeAlloc;
 #[global_allocator]
 static ALLOC: WeeAlloc = WeeAlloc::INIT;
 
+#[wasm_bindgen]
 pub enum Direction {
     Up,
     Right,
@@ -26,10 +27,16 @@ struct Snake {
 }
 
 impl Snake {
-    pub fn new(spawn_index: usize) -> Snake {
+    pub fn new(spawn_index: usize, size: usize) -> Snake {
+        let mut body = vec!();
+
+        for i in 0..size {
+            body.push(SnakeCell(spawn_index - i));
+        }
+
         Snake {
-            body: vec!(SnakeCell(spawn_index)),
-            direction: Direction::Left
+            body,
+            direction: Direction::Right
         }
     }
 }
@@ -40,7 +47,7 @@ impl World {
         World {
             width,
             size: width * width, 
-            snake: Snake::new(snake_index)
+            snake: Snake::new(snake_index, 3)
         }
     }
 
@@ -50,6 +57,10 @@ impl World {
 
     pub fn snake_head(&self) -> usize {
         self.snake.body[0].0
+    }
+
+    pub fn change_snake_direction(&mut self, direction: Direction) {
+        self.snake.direction = direction;
     }
 
     pub fn update(&mut self) {
