@@ -2,11 +2,14 @@ import './styles.css'
 
 import init, { World, Direction } from 'snake_game_wasm'
 
-const canvas = document.querySelector(".wrapper #snake-screen") as HTMLCanvasElement
+const canvas = document.querySelector("#snake-screen") as HTMLCanvasElement
 
 (async () => {
-  await init()
+  const wasm = await init()
 
+  const REWARD_CELL_COLOR = '#FF0000'
+  const SNAKE_HEAD_COLOR = '#7878db'
+  const SNAKE_BODY_COLOR = '#404040'
   const WORLD_WIDTH = 16
   const SNAKE_INDEX = Date.now() % (WORLD_WIDTH * WORLD_WIDTH)
 
@@ -56,28 +59,53 @@ const canvas = document.querySelector(".wrapper #snake-screen") as HTMLCanvasEle
     context.stroke()
   }
 
-  function drawSnake() {
-    const snakeIndex = world.snake_head()
-    const col = snakeIndex % worldWidth
-    const row = Math.floor(snakeIndex / worldWidth)
+  function drawReward() {
+    const index = world.reward_cell()
+    const col = index % worldWidth
+    const row = Math.floor(index / worldWidth)
 
     context.beginPath()
+    context.fillStyle = REWARD_CELL_COLOR
 
-    context.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+    context.fillRect(
+      col * CELL_SIZE,
+      row * CELL_SIZE,
+      CELL_SIZE,
+      CELL_SIZE
+    )
+    
+    context.stroke()
+  }
 
+  function drawSnake() {
+    const snakeCellPtr = world.snake_cells()
+    const snakeLength = world.snake_length()
+    const snakeCells = new Uint32Array(wasm.memory.buffer, snakeCellPtr, snakeLength)
+
+    snakeCells.forEach((cellIndex, index) => {
+      const col = cellIndex % worldWidth
+      const row = Math.floor(cellIndex / worldWidth)
+
+      context.fillStyle = index === 0 ? SNAKE_HEAD_COLOR : SNAKE_BODY_COLOR
+
+      context.beginPath()
+
+      context.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+    })
     context.stroke()
   }
 
   function paint() {
     drawWorld()
     drawSnake()
+    drawReward()
   }
 
   function update() {
     const FPS = 5
     setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
-      world.update()
+      world.step()
       paint()
       requestAnimationFrame(update)
     }, 1000 / FPS)

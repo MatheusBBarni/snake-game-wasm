@@ -7,8 +7,21 @@
     <title>Snake game with WASM</title>
   </head>
   <body>
-    <div class="wrapper">
-      <canvas id="snake-screen"></canvas>
+    <div class="container mx-auto flex flex-col items-center">
+      <div class="flex flex-col justify-start">
+        <div class="flex items-center">
+          <div class="flex mr-1 font-sans text-md">
+            Status:
+          </div>
+          <div id="game-status" class="font-sans text-lg">Stopped</div>
+        </div>
+      </div>
+      <div class="flex mb-5 mt-5">
+        <button id="game-control" class="font-sans text-lg bg-slate-900 text-slate-100 w-20 h-10 rounded">
+          Play!
+        </button>
+      </div>
+      <canvas id="snake-screen" class="w-96 h-96"></canvas>
     </div>
 
     <script type="module" src="/src/main.ts"></script>
