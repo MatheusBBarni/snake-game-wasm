@@ -23,10 +23,11 @@ pub enum Direction {
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Copy)]
 pub enum GameStatus {
     Won,
     Lost,
-    Played
+    Playing
 }
 
 #[wasm_bindgen]
@@ -97,6 +98,10 @@ impl World {
         self.width
     }
 
+    pub fn game_status(&self) -> Option<GameStatus> {
+        self.status
+    }
+
     pub fn size(&self) -> usize {
         self.size
     }
@@ -145,9 +150,13 @@ impl World {
         }
     }
 
+    pub fn start_game(&mut self) {
+        self.status = Some(GameStatus::Playing);
+    }
+
     pub fn step(&mut self) {
         match self.status {
-            Some(GameStatus::Played) => {
+            Some(GameStatus::Playing) => {
                 let temp = self.snake.body.clone();
 
                 match self.next_cell {

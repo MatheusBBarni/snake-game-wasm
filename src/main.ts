@@ -1,8 +1,10 @@
 import './styles.css'
 
-import init, { World, Direction } from 'snake_game_wasm'
+import init, { World, Direction, GameStatus } from 'snake_game_wasm'
 
 const canvas = document.querySelector("#snake-screen") as HTMLCanvasElement
+const gameControlButton = document.querySelector("#game-control") as HTMLButtonElement
+const gameStatusLabel = document.querySelector("#game-status") as HTMLDivElement
 
 (async () => {
   const wasm = await init()
@@ -23,6 +25,17 @@ const canvas = document.querySelector("#snake-screen") as HTMLCanvasElement
 
   canvas.height = worldSize
   canvas.width = worldSize
+
+  gameControlButton.addEventListener('click', () => {
+    if (world.game_status() !== undefined) {
+      location.reload()
+      return
+    }
+    world.start_game()
+    gameStatusLabel.innerHTML = 'Playing'
+    gameControlButton.innerHTML = 'Reload'
+    play()
+  })
 
   document.addEventListener('keydown', ({ code }: KeyboardEvent) => {
     switch (code) {
@@ -101,18 +114,17 @@ const canvas = document.querySelector("#snake-screen") as HTMLCanvasElement
     drawReward()
   }
 
-  function update() {
+  function play() {
     const FPS = 5
     setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
       world.step()
       paint()
-      requestAnimationFrame(update)
+      requestAnimationFrame(play)
     }, 1000 / FPS)
   }
   
   paint()
-  update()
 
 })()
 
