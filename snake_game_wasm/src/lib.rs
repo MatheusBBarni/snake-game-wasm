@@ -102,6 +102,15 @@ impl World {
         self.status
     }
 
+    pub fn game_status_text(&self) -> String {
+        match self.game_status() {
+            Some(GameStatus::Won) => String::from("You won!"),
+            Some(GameStatus::Lost) => String::from("You have lost!"),
+            Some(GameStatus::Playing) => String::from("Playing!"),
+            None => String::from("Press to play!"),
+        }
+    }
+
     pub fn size(&self) -> usize {
         self.size
     }
@@ -170,19 +179,22 @@ impl World {
                     }
                 }
 
-                let length = self.snake.body.len();
-
-                for i in 1..length {
+                for i in 1..self.snake_length() {
                     self.snake.body[i] = SnakeCell(temp[i - 1].0);
+                }
+
+                if self.snake.body[1..self.snake_length()].contains(&self.snake.body[0]) {
+                    self.status = Some(GameStatus::Lost);
                 }
 
                 if self.reward_cell == self.snake_head() {
                     if self.snake_length() < self.size {
-                        self.snake.body.push(SnakeCell(self.snake.body[1].0));
                         self.reward_cell = World::generate_reward_cell(self.size(), &self.snake.body);
-                        return
+                    } else {
+                        self.reward_cell = 10000;
+                        self.status = Some(GameStatus::Won);
                     }
-                    self.reward_cell = 10;
+
                     self.snake.body.push(SnakeCell(self.snake.body[1].0));
                 }
             },

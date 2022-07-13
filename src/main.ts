@@ -1,19 +1,20 @@
 import './styles.css'
 
-import init, { World, Direction, GameStatus } from 'snake_game_wasm'
+import init, { World, Direction } from 'snake_game_wasm'
 
 const canvas = document.querySelector("#snake-screen") as HTMLCanvasElement
 const gameControlButton = document.querySelector("#game-control") as HTMLButtonElement
 const gameStatusLabel = document.querySelector("#game-status") as HTMLDivElement
 
+const WORLD_WIDTH = 16 as number
+const SNAKE_INDEX = Date.now() % (WORLD_WIDTH * WORLD_WIDTH) as number
+
+const REWARD_CELL_COLOR = '#FF0000' as string
+const SNAKE_HEAD_COLOR = '#7878db' as string
+const SNAKE_BODY_COLOR = '#404040' as string
+
 (async () => {
   const wasm = await init()
-
-  const REWARD_CELL_COLOR = '#FF0000'
-  const SNAKE_HEAD_COLOR = '#7878db'
-  const SNAKE_BODY_COLOR = '#404040'
-  const WORLD_WIDTH = 16
-  const SNAKE_INDEX = Date.now() % (WORLD_WIDTH * WORLD_WIDTH)
 
   const world = World.new(WORLD_WIDTH, SNAKE_INDEX)
 
@@ -31,9 +32,9 @@ const gameStatusLabel = document.querySelector("#game-status") as HTMLDivElement
       location.reload()
       return
     }
-    world.start_game()
     gameStatusLabel.innerHTML = 'Playing'
     gameControlButton.innerHTML = 'Reload'
+    world.start_game()
     play()
   })
 
@@ -95,7 +96,9 @@ const gameStatusLabel = document.querySelector("#game-status") as HTMLDivElement
     const snakeLength = world.snake_length()
     const snakeCells = new Uint32Array(wasm.memory.buffer, snakeCellPtr, snakeLength)
 
-    snakeCells.forEach((cellIndex, index) => {
+    snakeCells
+      .filter((cell, index) => !(index > 0 && cell === snakeCells[0]))
+      .forEach((cellIndex, index) => {
       const col = cellIndex % worldWidth
       const row = Math.floor(cellIndex / worldWidth)
 
